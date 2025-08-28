@@ -1,0 +1,61 @@
+export const CATEGORIES = [
+  { id: "core", label: "Core" },
+  { id: "needs", label: "Needs" },
+  { id: "actions", label: "Actions" },
+  { id: "feel", label: "Feelings" },
+  { id: "people", label: "People" },
+  { id: "places", label: "Places" },
+];
+
+export const VOCAB = {
+  core: [
+    { id: "i", label: "I", speak: "I" },
+    { id: "you", label: "You", speak: "you" },
+    { id: "want", label: "Want", speak: "I want" },
+    { id: "more", label: "More", speak: "more" },
+    { id: "yes", label: "Yes", speak: "yes" },
+    { id: "no", label: "No", speak: "no" },
+    { id: "help", label: "Help", speak: "help" },
+    { id: "stop", label: "Stop", speak: "stop" },
+    { id: "go", label: "Go", speak: "go" },
+    { id: "please", label: "Please", speak: "please" },
+  ],
+  needs: [
+    { id: "bathroom", label: "Bathroom", speak: "bathroom" },
+    { id: "drink", label: "Drink", speak: "I need a drink" },
+    { id: "food", label: "Food", speak: "I am hungry" },
+    { id: "break", label: "Break", speak: "I need a break" },
+    { id: "pain", label: "Pain", speak: "I am in pain" },
+    { id: "meds", label: "Medication", speak: "I need medication" },
+  ],
+  actions: [
+    { id: "like", label: "Like", speak: "I like that" },
+    { id: "dontlike", label: "Don’t like", speak: "I do not like that" },
+    { id: "different", label: "Different", speak: "something different" },
+    { id: "finished", label: "Finished", speak: "finished" },
+    { id: "wait", label: "Wait", speak: "please wait" },
+    { id: "start", label: "Start", speak: "start" },
+  ],
+  feel: [
+    { id: "happy", label: "Happy", speak: "I feel happy" },
+    { id: "sad", label: "Sad", speak: "I feel sad" },
+    { id: "anxious", label: "Anxious", speak: "I feel anxious" },
+    { id: "angry", label: "Angry", speak: "I feel angry" },
+    { id: "tired", label: "Tired", speak: "I feel tired" },
+    { id: "ok", label: "Okay", speak: "I am okay" },
+  ],
+  people: [
+    { id: "staff", label: "Staff", speak: "staff" },
+    { id: "friend", label: "Friend", speak: "friend" },
+    { id: "nurse", label: "Nurse", speak: "nurse" },
+    { id: "doctor", label: "Doctor", speak: "doctor" },
+    { id: "family", label: "Family", speak: "family" },
+  ],
+  places: [
+    { id: "home", label: "Home", speak: "home" },
+    { id: "program", label: "Program", speak: "program" },
+    { id: "outside", label: "Outside", speak: "outside" },
+    { id: "vehicle", label: "Vehicle", speak: "vehicle" },
+    { id: "office", label: "Office", speak: "office" },
+  ],
+};
