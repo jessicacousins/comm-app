@@ -1,0 +1,91 @@
+export const ICON_PACKS = [
+  { id: "essentials", label: "Essentials" },
+  { id: "needs", label: "Needs" },
+  { id: "actions", label: "Actions" },
+  { id: "feelings", label: "Feelings" },
+  { id: "people", label: "People" },
+  { id: "places", label: "Places" },
+];
+
+const I = (id, emoji, speak, label = speak) => ({ id, emoji, speak, label });
+
+export const ICONS = {
+  essentials: [
+    I("ic-yes", "✅", "yes"),
+    I("ic-no", "❌", "no"),
+    I("ic-more", "➕", "more"),
+    I("ic-less", "➖", "less"),
+    I("ic-help", "🆘", "help"),
+    I("ic-stop", "🛑", "stop"),
+    I("ic-go", "▶️", "go"),
+    I("ic-wait", "⏳", "please wait"),
+    I("ic-please", "🙏", "please"),
+    I("ic-thanks", "🙌", "thank you"),
+    I("ic-repeat", "🔁", "please repeat"),
+    I("ic-slow", "🐢", "please slow down"),
+  ],
+  needs: [
+    I("ic-drink", "🥤", "I need a drink"),
+    I("ic-food", "🍽️", "I am hungry"),
+    I("ic-bath", "🚻", "bathroom"),
+    I("ic-rest", "🛌", "I need to rest"),
+    I("ic-break", "⏸️", "I need a break"),
+    I("ic-med", "💊", "I need medication"),
+    I("ic-water", "💧", "I want water"),
+    I("ic-coffee", "☕", "I want coffee"),
+    I("ic-phone", "📱", "I need my phone"),
+    I("ic-quiet", "🤫", "I need a quiet space"),
+  ],
+  actions: [
+    I("ic-ask", "❓", "I want to ask a question"),
+    I("ic-tell", "💬", "I want to tell you something"),
+    I("ic-look", "👀", "please look"),
+    I("ic-listen", "👂", "please listen"),
+    I("ic-open", "📂", "please open it"),
+    I("ic-close", "📁", "please close it"),
+    I("ic-change", "🔄", "please change it"),
+    I("ic-cancel", "🗑️", "please cancel"),
+    I("ic-save", "💾", "please save it"),
+    I("ic-search", "🔎", "please search"),
+  ],
+  feelings: [
+    I("ic-happy", "😊", "I feel happy"),
+    I("ic-calm", "😌", "I feel calm"),
+    I("ic-ok", "🙂", "I am okay"),
+    I("ic-tired", "🥱", "I feel tired"),
+    I("ic-sad", "😢", "I feel sad"),
+    I("ic-anxious", "😟", "I feel anxious"),
+    I("ic-angry", "😠", "I feel angry"),
+    I("ic-unsafe", "🚫", "I feel unsafe"),
+    I("ic-pain", "🤕", "I am in pain"),
+    I("ic-confused", "🤔", "I feel confused"),
+  ],
+  people: [
+    I("ic-staff", "🧑‍💼", "staff"),
+    I("ic-friend", "🧑‍🤝‍🧑", "friend"),
+    I("ic-family", "👨‍👩‍👧", "family"),
+    I("ic-doctor", "🩺", "doctor"),
+    I("ic-nurse", "🏥", "nurse"),
+    I("ic-therapist", "🗒️", "therapist"),
+    I("ic-teacher", "👩‍🏫", "teacher"),
+    I("ic-driver", "🚖", "driver"),
+    I("ic-advocate", "⚖️", "advocate"),
+    I("ic-interpreter", "🗣️", "interpreter"),
+  ],
+  places: [
+    I("ic-home", "🏠", "home"),
+    I("ic-office", "🏢", "office"),
+    I("ic-program", "🏫", "program"),
+    I("ic-clinic", "🏥", "clinic"),
+    I("ic-pharmacy", "💊", "pharmacy"),
+    I("ic-grocery", "🛒", "grocery store"),
+    I("ic-park", "🌳", "park"),
+    I("ic-bus", "🚌", "bus stop"),
+    I("ic-train", "🚆", "train station"),
+    I("ic-meeting", "👥", "meeting room"),
+  ],
+};
+
+export function totalIconCount() {
+  return Object.values(ICONS).reduce((n, arr) => n + arr.length, 0);
+}

@@ -1,6 +1,8 @@
 const E = (id, label, speak = label) => ({ id, label, speak });
 
 export const CATEGORIES = [
+  { id: "icons", label: "Icon Board" },
+
   { id: "core", label: "Core" },
   { id: "needs", label: "Needs" },
   { id: "actions", label: "Actions" },

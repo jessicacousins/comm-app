@@ -13,6 +13,10 @@ import SpeechControls from "./components/SpeechControls.jsx";
 import KeyboardInput from "./components/KeyboardInput.jsx";
 import SettingsPanel from "./components/SettingsPanel.jsx";
 
+// icons
+import IconBoard from "./components/IconBoard.jsx";
+import { ICON_PACKS, ICONS, totalIconCount } from "./data/icons.js";
+
 const LS_KEYS = {
   favorites: "speakboard_favorites_v1",
   settings: "speakboard_settings_v1",
@@ -21,7 +25,6 @@ const LS_KEYS = {
 };
 
 export default function App() {
-  // UI state
   const [activeCat, setActiveCat] = useState("core");
   const [phrase, setPhrase] = useState([]);
   const [favorites, setFavorites] = useState(
@@ -50,11 +53,9 @@ export default function App() {
         ?.largeButtons || false
   );
 
-  // Derive
   const currentItems = VOCAB[activeCat] || [];
   const favoritesSet = favorites;
 
-  // Effects: load voices
   useEffect(() => {
     if (!ttsSupported()) return;
     const assign = () => setVoices(getVoices());
@@ -64,7 +65,6 @@ export default function App() {
       window.speechSynthesis.removeEventListener("voiceschanged", assign);
   }, []);
 
-  // Apply high contrast & size classes to <body>
   useEffect(() => {
     document.body.classList.toggle("high-contrast", highContrast);
     document.documentElement.style.setProperty(
@@ -75,7 +75,6 @@ export default function App() {
     localStorage.setItem(LS_KEYS.settings, JSON.stringify(saved));
   }, [highContrast, largeButtons]);
 
-  // Persist favorites & usage
   useEffect(() => {
     localStorage.setItem(
       LS_KEYS.favorites,
@@ -94,18 +93,20 @@ export default function App() {
     [voices, voiceName]
   );
 
-  // Handlers
   const handleItem = (item) => {
     setPhrase((p) => [...p, item]);
-    // Count usage for basic ABA-friendly logging
     setUsage((u) => ({ ...u, [item.id]: (u[item.id] || 0) + 1 }));
-    // Immediate echo of the single word for reinforcement
     speakText(item.speak || item.label, {
       voice: selectedVoice,
       rate,
       pitch,
       volume,
     });
+  };
+
+  const handleIcon = (ic) => {
+    const item = { id: ic.id, label: ic.label, speak: ic.speak };
+    handleItem(item);
   };
 
   const speakPhrase = () => {
@@ -125,7 +126,6 @@ export default function App() {
     setPhrase([]);
   };
   const undoPhrase = () => setPhrase((p) => p.slice(0, -1));
-
   const saveFavorites = () => {
     if (phrase.length === 0) return;
     const ids = phrase.map((p) => p.id);
@@ -133,22 +133,27 @@ export default function App() {
     ids.forEach((id) => next.add(id));
     setFavorites(next);
   };
-
   const addTypedTokens = (tokens) => setPhrase((p) => [...p, ...tokens]);
 
-  // Counts shown by category (how many buttons)
+  // Left-nav counts (words + optional icon section if you add it)
   const catCounts = useMemo(() => {
     const out = {};
-    for (const c of CATEGORIES) out[c.id] = (VOCAB[c.id] || []).length;
+    for (const c of CATEGORIES) {
+      if (c.id === "icons") {
+        out[c.id] = totalIconCount();
+        continue;
+      }
+      out[c.id] = (VOCAB[c.id] || []).length;
+    }
     return out;
   }, []);
 
   const exportUsageCSV = () => {
     const rows = [["item_id", "label", "category", "count"]];
     for (const [catId, items] of Object.entries(VOCAB)) {
-      items.forEach((it) => {
-        rows.push([it.id, it.label, catId, usage[it.id] || 0]);
-      });
+      items.forEach((it) =>
+        rows.push([it.id, it.label, catId, usage[it.id] || 0])
+      );
     }
     const csv = rows
       .map((r) => r.map((x) => `"${String(x).replace(/"/g, '""')}"`).join(","))
@@ -171,13 +176,6 @@ export default function App() {
       pitch,
       volume,
     });
-
-  useEffect(() => {
-    if (selectedVoice?.name) {
-      setVoiceName(selectedVoice.name);
-      localStorage.setItem(LS_KEYS.lastVoice, selectedVoice.name);
-    }
-  }, [selectedVoice?.name]);
 
   return (
     <div className="app">
@@ -219,12 +217,20 @@ export default function App() {
           onPick={setActiveCat}
         />
 
-        {/* Center */}
-        <Board
-          items={currentItems}
-          favoritesSet={favoritesSet}
-          onClickItem={handleItem}
-        />
+        {/* Center: show icon board when category = "icons", otherwise word board */}
+        {activeCat === "icons" ? (
+          <IconBoard
+            packs={ICON_PACKS}
+            iconsByPack={ICONS}
+            onPick={handleIcon}
+          />
+        ) : (
+          <Board
+            items={currentItems}
+            favoritesSet={favoritesSet}
+            onClickItem={handleItem}
+          />
+        )}
 
         {/* Right */}
         <PhraseBar
