@@ -406,7 +406,7 @@ input[type="text"] {
   cursor: pointer;
   isolation: isolate;
   transition: transform 0.05s ease;
-  font-size: clamp(34px, 7.2vw, 48px); /* big emoji */
+  font-size: clamp(34px, 7.2vw, 48px);
 }
 .icon-btn:focus-visible {
   outline: none;
@@ -419,4 +419,119 @@ input[type="text"] {
 }
 .icon-emoji {
   line-height: 1;
+}
+
+/* Column stack on right for Phrase + First→Then */
+.right-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+/* Scenes UI */
+.scene-tabs {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.scene-board {
+  display: grid;
+  gap: var(--gap);
+  grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr));
+}
+.scene-card {
+  text-align: left;
+  background: linear-gradient(
+    180deg,
+    rgba(38, 47, 62, 0.7),
+    rgba(25, 31, 44, 0.7)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 14px;
+  min-height: 72px;
+  color: var(--ink);
+  cursor: pointer;
+  font-weight: 600;
+}
+.scene-card:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+.scene-card:active {
+  box-shadow: var(--active-shadow);
+  transform: translateY(1px);
+}
+
+/* First → Then */
+.firstthen .badge {
+  font-size: 12px;
+  background: rgba(103, 232, 249, 0.18);
+  border: 1px solid rgba(103, 232, 249, 0.35);
+  padding: 4px 8px;
+  border-radius: 999px;
+  margin-right: 8px;
+}
+.ft-steps {
+  display: grid;
+  gap: var(--gap);
+  grid-template-columns: 1fr;
+}
+@media (min-width: 900px) {
+  .ft-steps {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.ft-card {
+  background: var(--panel-2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px;
+}
+.ft-card.active {
+  box-shadow: var(--active-shadow);
+}
+.ft-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.ft-body {
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+}
+.firstthen input[type="number"] {
+  width: 92px;
+  text-align: right;
+}
+.ft-timer {
+  position: relative;
+  margin-top: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  height: 26px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+.ft-timer.is-paused {
+  opacity: 0.6;
+}
+.ft-progress {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+}
+.ft-remaining {
+  position: absolute;
+  right: 8px;
+  top: 2px;
+  font-size: 12px;
+  color: var(--ink);
 }
