@@ -17,10 +17,16 @@ import SettingsPanel from "./components/SettingsPanel.jsx";
 import IconBoard from "./components/IconBoard.jsx";
 import { ICON_PACKS, ICONS, totalIconCount } from "./data/icons.js";
 
-//  Scenes + FirstThen
+// Scenes + FirstThen
 import SceneBoard from "./components/SceneBoard.jsx";
 import { SCENES, SCENE_PHRASES, totalSceneCount } from "./data/scenes.js";
 import FirstThen from "./components/FirstThen.jsx";
+
+// BodyMap + SpeakLog + LanguageSwitch + Teleprompter
+import Teleprompter from "./components/Teleprompter.jsx";
+import SpeakLog from "./components/SpeakLog.jsx";
+import BodyMap from "./components/BodyMap.jsx";
+import LanguageSwitch from "./components/LanguageSwitch.jsx";
 
 const LS_KEYS = {
   favorites: "speakboard_favorites_v1",
@@ -30,6 +36,7 @@ const LS_KEYS = {
 };
 
 export default function App() {
+  // Core state
   const [activeCat, setActiveCat] = useState("core");
   const [phrase, setPhrase] = useState([]);
   const [favorites, setFavorites] = useState(
@@ -39,6 +46,7 @@ export default function App() {
     JSON.parse(localStorage.getItem(LS_KEYS.usage) || "{}")
   );
 
+  // TTS controls
   const [voices, setVoices] = useState([]);
   const [voiceName, setVoiceName] = useState(
     localStorage.getItem(LS_KEYS.lastVoice) || ""
@@ -47,6 +55,7 @@ export default function App() {
   const [pitch, setPitch] = useState(1);
   const [volume, setVolume] = useState(1);
 
+  // Display preferences
   const [highContrast, setHighContrast] = useState(
     () =>
       JSON.parse(localStorage.getItem(LS_KEYS.settings) || "{}")
@@ -58,6 +67,12 @@ export default function App() {
         ?.largeButtons || false
   );
 
+  const [teleOpen, setTeleOpen] = useState(false);
+  const [teleText, setTeleText] = useState("");
+  const [speakLog, setSpeakLog] = useState([]);
+  const [lang, setLang] = useState("auto");
+
+  // First → Then
   const [lastTapped, setLastTapped] = useState(null);
 
   const currentItems = VOCAB[activeCat] || [];
@@ -74,14 +89,6 @@ export default function App() {
     return out;
   }, []);
 
-  const itemsById = useMemo(() => {
-    const map = {};
-    for (const [cat, items] of Object.entries(VOCAB)) {
-      for (const it of items) map[it.id] = it;
-    }
-    return map;
-  }, []);
-
   // Voices
   useEffect(() => {
     if (!ttsSupported()) return;
@@ -92,7 +99,7 @@ export default function App() {
       window.speechSynthesis.removeEventListener("voiceschanged", assign);
   }, []);
 
-  // High contrast / button size
+  // Contrast / size tokens
   useEffect(() => {
     document.body.classList.toggle("high-contrast", highContrast);
     document.documentElement.style.setProperty(
@@ -114,6 +121,7 @@ export default function App() {
     localStorage.setItem(LS_KEYS.usage, JSON.stringify(usage));
   }, [usage]);
 
+  // Voice selection (preferred + language override)
   const selectedVoice = useMemo(
     () =>
       voices.find((v) => v.name === voiceName) ||
@@ -122,17 +130,36 @@ export default function App() {
     [voices, voiceName]
   );
 
-  // Handlers
+  const voiceForLang = useMemo(() => {
+    if (lang === "auto") return null;
+    const match = voices.find((v) =>
+      (v.lang || "").toLowerCase().startsWith(lang.toLowerCase())
+    );
+    return match || null;
+  }, [voices, lang]);
+
+  // Unified speak helper (teleprompter + session log)
+  const speakNow = (text) => {
+    if (!text) return;
+    const v = voiceForLang || selectedVoice;
+    setTeleText(text);
+    setTeleOpen(true);
+    setSpeakLog((s) => [text, ...s].slice(0, 20));
+    speakText(text, {
+      voice: v,
+      rate,
+      pitch,
+      volume,
+      onend: () => setTeleOpen(false),
+    });
+  };
+
+  // Item handlers
   const handleItem = (item) => {
     setPhrase((p) => [...p, item]);
     setUsage((u) => ({ ...u, [item.id]: (u[item.id] || 0) + 1 }));
     setLastTapped(item);
-    speakText(item.speak || item.label, {
-      voice: selectedVoice,
-      rate,
-      pitch,
-      volume,
-    });
+    speakNow(item.speak || item.label);
   };
   const handleIcon = (ic) =>
     handleItem({ id: ic.id, label: ic.label, speak: ic.speak });
@@ -142,10 +169,12 @@ export default function App() {
   const speakPhrase = () => {
     if (phrase.length === 0) return;
     const text = phrase.map((t) => t.speak || t.label).join(" ");
-    speakText(text, { voice: selectedVoice, rate, pitch, volume });
+    speakNow(text);
   };
+
   const clearPhrase = () => {
     cancelSpeech();
+    setTeleOpen(false);
     setPhrase([]);
   };
   const undoPhrase = () => setPhrase((p) => p.slice(0, -1));
@@ -169,6 +198,7 @@ export default function App() {
     return out;
   }, [categoriesNav]);
 
+  // Usage export
   const exportUsageCSV = () => {
     const rows = [["item_id", "label", "category", "count"]];
     for (const [catId, items] of Object.entries(VOCAB)) {
@@ -190,13 +220,7 @@ export default function App() {
     URL.revokeObjectURL(url);
   };
 
-  const previewVoice = () =>
-    speakText("This is a voice preview.", {
-      voice: selectedVoice,
-      rate,
-      pitch,
-      volume,
-    });
+  const previewVoice = () => speakNow("This is a voice preview.");
 
   // ! First → Then state
   const [ftFirst, setFtFirst] = useState("");
@@ -242,7 +266,7 @@ export default function App() {
           if (ftStep === "first" && ftThen) {
             // advance to THEN
             setFtStep("then");
-            speakText(ftThen, { voice: selectedVoice, rate, pitch, volume });
+            speakNow(ftThen);
             return ftDuration;
           } else {
             // finished
@@ -257,8 +281,7 @@ export default function App() {
     }, 1000);
     // Speak current step at start
     const startText = ftStep === "first" ? ftFirst : ftThen;
-    if (startText)
-      speakText(startText, { voice: selectedVoice, rate, pitch, volume });
+    if (startText) speakNow(startText);
   };
 
   const ftPause = () => {
@@ -275,14 +298,19 @@ export default function App() {
     setFtDuration(n);
     setFtRemaining(n);
   };
-  const ftSpeakFirst = () =>
-    ftFirst &&
-    speakText(ftFirst, { voice: selectedVoice, rate, pitch, volume });
-  const ftSpeakThen = () =>
-    ftThen && speakText(ftThen, { voice: selectedVoice, rate, pitch, volume });
+  const ftSpeakFirst = () => ftFirst && speakNow(ftFirst);
+  const ftSpeakThen = () => ftThen && speakNow(ftThen);
 
-  // Cleanup
-  useEffect(() => () => clearInterval(ftTimerRef.current), []);
+  useEffect(() => {
+    return () => clearInterval(ftTimerRef.current);
+  }, []);
+
+  // Helpers for SpeakLog interactions
+  const addLogTextToPhrase = (txt) =>
+    setPhrase((p) => [
+      ...p,
+      { id: "log_" + Date.now(), label: txt, speak: txt },
+    ]);
 
   return (
     <div className="app">
@@ -293,6 +321,8 @@ export default function App() {
         </div>
 
         <div className="header-right">
+          <LanguageSwitch lang={lang} onLang={setLang} />
+
           <SpeechControls
             voices={voices}
             voiceName={voiceName}
@@ -324,7 +354,7 @@ export default function App() {
           onPick={setActiveCat}
         />
 
-        {/* Center: word board, icons, or scenes */}
+        {/* Center: word board, icons, scenes, or contextual BodyMap if on Health */}
         {activeCat === "icons" ? (
           <IconBoard
             packs={ICON_PACKS}
@@ -337,6 +367,8 @@ export default function App() {
             phrasesByScene={SCENE_PHRASES}
             onPick={handleScenePhrase}
           />
+        ) : activeCat === "health" ? (
+          <BodyMap onSpeak={speakNow} />
         ) : (
           <Board
             items={currentItems}
@@ -345,7 +377,7 @@ export default function App() {
           />
         )}
 
-        {/* Right: phrase builder + First→Then */}
+        {/* Right: phrase builder + First→Then + session speak log */}
         <div className="right-col">
           <PhraseBar
             phraseTokens={phrase}
@@ -375,6 +407,12 @@ export default function App() {
             onSpeakFirst={ftSpeakFirst}
             onSpeakThen={ftSpeakThen}
           />
+
+          <SpeakLog
+            items={speakLog}
+            onReplay={(txt) => speakNow(txt)}
+            onAddToPhrase={(txt) => addLogTextToPhrase(txt)}
+          />
         </div>
       </main>
 
@@ -382,18 +420,23 @@ export default function App() {
         className="panel"
         style={{ margin: "0 var(--gap) var(--gap) var(--gap)" }}
       >
-        <KeyboardInput
-          onSpeak={(text) =>
-            speakText(text, { voice: selectedVoice, rate, pitch, volume })
-          }
-          onAddToPhrase={addTypedTokens}
-        />
+        <KeyboardInput onSpeak={speakNow} onAddToPhrase={addTypedTokens} />
         <p className="muted" style={{ marginTop: 8 }}>
           <strong>Keyboard tips:</strong> Type and hit <kbd>Enter</kbd> to
           speak, or use <em>Add</em> to place words into the phrase row for
           later.
         </p>
       </section>
+
+      {/* ! readable overlay whenever speech happens */}
+      <Teleprompter
+        open={teleOpen}
+        text={teleText}
+        onClose={() => {
+          setTeleOpen(false);
+          cancelSpeech();
+        }}
+      />
     </div>
   );
 }

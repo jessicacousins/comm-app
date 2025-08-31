@@ -535,3 +535,66 @@ input[type="text"] {
   font-size: 12px;
   color: var(--ink);
 }
+
+.center-col,
+.right-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+/* Teleprompter */
+.teleprompter {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.8);
+  display: grid;
+  place-items: center;
+}
+.tele-wrap {
+  width: min(1000px, 92vw);
+  padding: 24px;
+  border-radius: 16px;
+  background: linear-gradient(
+    180deg,
+    rgba(24, 31, 42, 0.85),
+    rgba(17, 22, 31, 0.9)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.tele-text {
+  font-size: clamp(28px, 5vw, 56px);
+  line-height: 1.2;
+  color: var(--ink);
+  text-align: center;
+  margin-bottom: 16px;
+}
+.tele-actions {
+  display: flex;
+  justify-content: center;
+}
+
+/* Body map */
+.body-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(min(140px, 100%), 1fr));
+}
+.body-cell {
+  min-height: 56px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--panel-2);
+  color: var(--ink);
+  font-weight: 700;
+  cursor: pointer;
+}
+.body-cell.active {
+  box-shadow: var(--active-shadow);
+}
+.body-cell:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
