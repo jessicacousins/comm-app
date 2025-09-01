@@ -75,6 +75,9 @@ export default function App() {
   // First → Then
   const [lastTapped, setLastTapped] = useState(null);
 
+  // !  search state ---
+  const [query, setQuery] = useState("");
+
   const currentItems = VOCAB[activeCat] || [];
   const favoritesSet = favorites;
 
@@ -312,6 +315,69 @@ export default function App() {
       { id: "log_" + Date.now(), label: txt, speak: txt },
     ]);
 
+  // ! search results (vocab + icons + scenes)
+  const searchResults = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+    const results = [];
+
+    // VOCAB
+    for (const [cat, items] of Object.entries(VOCAB)) {
+      for (const it of items) {
+        const hay = `${it.label} ${it.speak || ""}`.toLowerCase();
+        if (hay.includes(q)) {
+          results.push({
+            id: `${cat}:${it.id}`,
+            label: it.label,
+            speak: it.speak || it.label,
+            source: `Category: ${cat}`,
+          });
+        }
+      }
+    }
+
+    // ICONS
+    for (const [pack, arr] of Object.entries(ICONS || {})) {
+      for (const ic of arr) {
+        const hay = `${ic.label} ${ic.speak || ""}`.toLowerCase();
+        if (hay.includes(q)) {
+          results.push({
+            id: `icons:${ic.id}`,
+            label: ic.label,
+            speak: ic.speak || ic.label,
+            source: `Icons: ${pack}`,
+          });
+        }
+      }
+    }
+
+    // SCENES
+    for (const [scene, arr] of Object.entries(SCENE_PHRASES || {})) {
+      for (const p of arr) {
+        const hay = `${p.label} ${p.speak || ""}`.toLowerCase();
+        if (hay.includes(q)) {
+          results.push({
+            id: `scene:${p.id}`,
+            label: p.label,
+            speak: p.speak || p.label,
+            source: `Scene: ${scene}`,
+          });
+        }
+      }
+    }
+
+    return results.slice(0, 60);
+  }, [query]);
+
+  const handleSearchPick = (r) => {
+    handleItem({ id: r.id, label: r.label, speak: r.speak });
+  };
+
+  const onSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchResults.length) handleSearchPick(searchResults[0]);
+  };
+
   return (
     <div className="app">
       <header className="header" role="banner">
@@ -319,6 +385,47 @@ export default function App() {
           <div className="logo" aria-hidden="true"></div>
           <h1>SpeakBoard Pro</h1>
         </div>
+
+        {/*  Search bar  */}
+        <form
+          role="search"
+          onSubmit={onSearchSubmit}
+          style={{
+            flex: 1,
+            display: "flex",
+            gap: 8,
+            alignItems: "center",
+            maxWidth: 560,
+            margin: "0 12px",
+          }}
+        >
+          <input
+            type="text"
+            placeholder="Search words, icons, scenes…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            aria-label="Search vocabulary"
+            style={{
+              flex: 1,
+              minHeight: 40,
+              borderRadius: 10,
+              border: "1px solid rgba(255,255,255,0.08)",
+              background: "var(--panel-2)",
+              color: "var(--ink)",
+              padding: "8px 10px",
+            }}
+          />
+          {query && (
+            <button
+              type="button"
+              className="button"
+              onClick={() => setQuery("")}
+              title="Clear"
+            >
+              Clear
+            </button>
+          )}
+        </form>
 
         <div className="header-right">
           <LanguageSwitch lang={lang} onLang={setLang} />
@@ -354,8 +461,37 @@ export default function App() {
           onPick={setActiveCat}
         />
 
-        {/* Center: word board, icons, scenes, or contextual BodyMap if on Health */}
-        {activeCat === "icons" ? (
+        {/* Center: if searching, show results panel; else show the selected board */}
+        {query ? (
+          <section className="panel" aria-label="Search results">
+            {searchResults.length === 0 ? (
+              <p className="muted">No matches for “{query}”.</p>
+            ) : (
+              <>
+                <div
+                  className="row"
+                  style={{ justifyContent: "space-between", marginBottom: 8 }}
+                >
+                  <strong>Results</strong>
+                  <span className="muted">{searchResults.length}</span>
+                </div>
+                <div className="board">
+                  {searchResults.map((r) => (
+                    <button
+                      key={r.id}
+                      className="vocab-btn"
+                      onClick={() => handleSearchPick(r)}
+                      aria-label={`Say: ${r.label}`}
+                      title={r.source}
+                    >
+                      <span className="label">{r.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </section>
+        ) : activeCat === "icons" ? (
           <IconBoard
             packs={ICON_PACKS}
             iconsByPack={ICONS}
